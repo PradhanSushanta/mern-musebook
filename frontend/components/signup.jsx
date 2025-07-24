@@ -38,7 +38,11 @@ const Signup = () => {
       navigate("/login");
     } catch (error) {
       console.error("Signup Error:", error);
-      alert("Registration failed! Please try again.");
+      if (error.response && error.response.data && error.response.data.message) {
+        alert("Registration failed: " + error.response.data.message);
+      } else {
+        alert("Registration failed! Please try again.");
+      }
     }
   };
 
