@@ -3,22 +3,24 @@ const mongoose = require('mongoose');
 const cors = require('cors');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
-
-const PORT = 5000;
-const MONGODB_URI = 'mongodb+srv://pradhansushantakumar5:BfuMUj8RGy3xUv61@cluster0.emnouqu.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0';
-const JWT_SECRET = 'your_secret_key_here'; // Change this to a secure key
+require('dotenv').config(); // Load .env variables
 
 const app = express();
+const PORT = process.env.PORT || 5000;
+const MONGODB_URI = process.env.MONGODB_URI;
+const JWT_SECRET = process.env.JWT_SECRET;
 
 // Middleware
-app.use(cors());
+app.use(cors({
+  origin: 'https://mern-musebook.vercel.app', // ✅ Replace with your Vercel frontend URL
+  credentials: true
+}));
 app.use(express.json());
 
 // Connect to MongoDB
-mongoose.connect(MONGODB_URI);
-const db = mongoose.connection;
-db.on('error', (err) => console.log('MongoDB connection error:', err));
-db.once('open', () => console.log('MongoDB connected'));
+mongoose.connect(MONGODB_URI)
+  .then(() => console.log('✅ MongoDB connected'))
+  .catch((err) => console.error('❌ MongoDB connection error:', err));
 
 // User Schema
 const userSchema = new mongoose.Schema({
@@ -29,51 +31,63 @@ const userSchema = new mongoose.Schema({
 
 const User = mongoose.model('User', userSchema);
 
-// Register User
+// Health check route
+app.get('/', (req, res) => {
+  res.send('Backend is working ✅');
+});
+
+// Register Route
 app.post('/register', async (req, res) => {
   const { fullName, fullemail, fullpassword } = req.body;
 
-  // Check if user already exists
-  const existingUser = await User.findOne({ fullemail });
-  if (existingUser) {
-    return res.status(400).json({ message: 'Email already registered' });
+  try {
+    const existingUser = await User.findOne({ fullemail });
+    if (existingUser) {
+      return res.status(400).json({ message: 'Email already registered' });
+    }
+
+    const hashedPassword = await bcrypt.hash(fullpassword, 10);
+    const user = new User({ fullName, fullemail, fullpassword: hashedPassword });
+
+    await user.save();
+    res.json({ message: 'User registered successfully' });
+
+  } catch (error) {
+    console.error('Registration Error:', error);
+    res.status(500).json({ message: 'Server error' });
   }
-
-  const hashedPassword = await bcrypt.hash(fullpassword, 10);
-  const user = new User({ fullName, fullemail, fullpassword: hashedPassword });
-
-  await user.save();
-  res.json({ message: 'User created successfully' });
 });
 
-// Login User with JWT
+// Login Route
 app.post('/login', async (req, res) => {
   const { email, password } = req.body;
 
-  console.log("Received login request:", email, password); // ✅ Debugging
+  try {
+    const user = await User.findOne({ fullemail: email });
+    if (!user) {
+      return res.status(400).json({ message: 'User not found' });
+    }
 
-  // Check if user exists (match `email` to `fullemail` in DB)
-  const user = await User.findOne({ fullemail: email });
-  if (!user) {
-    console.log("User not found");
-    return res.status(400).json({ message: 'User not found' });
+    const isMatch = await bcrypt.compare(password, user.fullpassword);
+    if (!isMatch) {
+      return res.status(400).json({ message: 'Invalid password' });
+    }
+
+    const token = jwt.sign(
+      { id: user._id, email: user.fullemail },
+      JWT_SECRET,
+      { expiresIn: '1h' }
+    );
+
+    res.json({ message: 'Login successful', token });
+
+  } catch (error) {
+    console.error('Login Error:', error);
+    res.status(500).json({ message: 'Server error' });
   }
-
-  // Compare hashed password
-  const isMatch = await bcrypt.compare(password, user.fullpassword);
-  if (!isMatch) {
-    console.log("Invalid password");
-    return res.status(400).json({ message: 'Invalid password' });
-  }
-
-  // Generate JWT Token
-  const token = jwt.sign({ id: user._id, email: user.fullemail }, JWT_SECRET, { expiresIn: '1h' });
-
-  console.log("Login successful, token generated:", token);
-  res.json({ message: 'Login successful', token });
 });
 
-
+// Start Server
 app.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT}`);
+  console.log(`🚀 Server running on port ${PORT}`);
 });
