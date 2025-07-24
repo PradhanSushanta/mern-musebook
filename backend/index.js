@@ -37,7 +37,7 @@ app.get('/', (req, res) => {
 });
 
 // Register Route
-app.post('/register', async (req, res) => {
+app.post('https://mern-musebook.onrender.com/register', async (req, res) => {
   const { fullName, fullemail, fullpassword } = req.body;
 
   try {
@@ -59,7 +59,7 @@ app.post('/register', async (req, res) => {
 });
 
 // Login Route
-app.post('/login', async (req, res) => {
+app.post('https://mern-musebook.onrender.com/login', async (req, res) => {
   const { email, password } = req.body;
 
   try {
