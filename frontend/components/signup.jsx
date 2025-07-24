@@ -20,7 +20,7 @@ const Signup = () => {
 
   const submithandler = async (e) => {
     e.preventDefault();
-    const { fullName, fullemail, fullpassword, fullconfirmpassword } = formDta;
+    const { fullName, fullemail, fullpassword } = formDta;
 
     if (!fullName || !fullemail || !fullpassword || !fullconfirmpassword) {
       alert("All fields are required!");
@@ -33,16 +33,16 @@ const Signup = () => {
     }
 
     try {
-      const response = await axios.post("https://mern-musebook.onrender.com/signup", formDta);
+      const response = await axios.post("https://mern-musebook.onrender.com/signup", {
+  fullName,
+  fullemail,
+  fullpassword
+});
       alert("Registration successful! Redirecting to Login...");
       navigate("/login");
     } catch (error) {
       console.error("Signup Error:", error);
-      if (error.response && error.response.data && error.response.data.message) {
-        alert("Registration failed: " + error.response.data.message);
-      } else {
-        alert("Registration failed! Please try again.");
-      }
+      alert("Registration failed! Please try again.");
     }
   };
 
