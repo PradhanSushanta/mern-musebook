@@ -33,7 +33,7 @@ const Signup = () => {
     }
 
     try {
-      const response = await axios.post("https://mern-musebook.onrender.com/register", formDta);
+      const response = await axios.post("https://mern-musebook.onrender.com/signup", formDta);
       alert("Registration successful! Redirecting to Login...");
       navigate("/login");
     } catch (error) {
