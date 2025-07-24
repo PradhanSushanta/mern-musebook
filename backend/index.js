@@ -5,7 +5,7 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 
 const PORT = 5000;
-const MONGODB_URI = 'mongodb://localhost:27017/ecommerce';
+const MONGODB_URI = 'mongodb+srv://pradhansushantakumar5:BfuMUj8RGy3xUv61@cluster0.emnouqu.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0';
 const JWT_SECRET = 'your_secret_key_here'; // Change this to a secure key
 
 const app = express();
