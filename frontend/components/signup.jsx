@@ -20,7 +20,7 @@ const Signup = () => {
 
   const submithandler = async (e) => {
     e.preventDefault();
-    const { fullName, fullemail, fullpassword } = formDta;
+    const { fullName, fullemail, fullpassword, fullconfirmpassword } = formDta;
 
     if (!fullName || !fullemail || !fullpassword || !fullconfirmpassword) {
       alert("All fields are required!");
