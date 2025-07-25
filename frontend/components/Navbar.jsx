@@ -1,5 +1,5 @@
 import React from 'react';
-import { Link ,useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { IonIcon } from '@ionic/react';
 import { menuOutline, closeOutline, search, logoFacebook, logoTwitter, logoYoutube } from 'ionicons/icons';
 
@@ -19,7 +19,8 @@ const Navbar = () => {
       <div className="header-top">
         <div className="container">
           <Link to="/" className="logo">
-            <img src="\images\logo.png" alt="Logo" />
+            {/* Use public/images/logo.png if image is in public folder */}
+            <img src="/images/logo.png" alt="Logo" />
           </Link>
           
           <div className="header-btn-group" style={{ marginLeft: 'auto' }}>
