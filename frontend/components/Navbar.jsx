@@ -19,7 +19,7 @@ const Navbar = () => {
       <div className="header-top">
         <div className="container">
           <Link to="/" className="logo">
-            <img  src="public\images\logo.png" alt="Tourly logo" />
+            <img src="\images\logo.png" alt="Logo" />
           </Link>
           
           <div className="header-btn-group" style={{ marginLeft: 'auto' }}>
