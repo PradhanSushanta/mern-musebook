@@ -427,7 +427,7 @@ body { background: var(--white); }
 \*-----------------------------------*/
 
 .hero {
-  background-image: url("../public\images\banner1.jpg");
+  background-image: url("../public/images/banner1.jpg");
   background-repeat: no-repeat;
   background-size: cover;
   background-position: center;
