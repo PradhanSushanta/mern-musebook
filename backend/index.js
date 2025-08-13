@@ -12,7 +12,10 @@ const JWT_SECRET = process.env.JWT_SECRET;
 
 
 // Middleware
-app.use(cors());
+app.use(cors({
+  origin: 'https://mern-musebook.vercel.app', // ✅ Replace with your Vercel frontend URL
+  credentials: true
+}));
 app.use(express.json());
 
 // Connect to MongoDB
