@@ -1,7 +1,7 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import Home from "../components/Home";
-import Gallery from "../components/Gallery";
+
 import Destination from "../components/Destination";
 import Login from "../components/Login";
 import Signup from "../components/signup";
@@ -33,7 +33,7 @@ useEffect(() => {
         <Route path="/home" element={isAuthenticated ? <Home /> : <Navigate to="/login" />} />
         <Route path="/booknow" element={<Booknow />} />
         <Route element={<ProtectedRoute />}>
-          
+          <Route path="/gallery" element={<Gallery />} />
           <Route path="/destination" element={<Destination />} />
           <Route path="/package" element={<PackageSection />} />
           <Route path="/gallery-section" element={<GallerySection />} />
