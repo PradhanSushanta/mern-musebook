@@ -33,7 +33,7 @@ useEffect(() => {
         <Route path="/home" element={isAuthenticated ? <Home /> : <Navigate to="/login" />} />
         <Route path="/booknow" element={<Booknow />} />
         <Route element={<ProtectedRoute />}>
-          <Route path="/gallery" element={<Gallery />} />
+          
           <Route path="/destination" element={<Destination />} />
           <Route path="/package" element={<PackageSection />} />
           <Route path="/gallery-section" element={<GallerySection />} />
