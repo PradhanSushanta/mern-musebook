@@ -4,26 +4,22 @@ const cors = require('cors');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const axios = require('axios');
-require('dotenv').config(); // Load environment variables from .env
 
 const app = express();
-
-// Environment variables
 const PORT = process.env.PORT || 5000;
-const MONGODB_URI = process.env.MONGODB_URI ;
-const JWT_SECRET = process.env.JWT_SECRET ;
+const MONGODB_URI = process.env.MONGODB_URI;
+const JWT_SECRET = process.env.JWT_SECRET;
+
 
 // Middleware
-app.use(cors({
-  origin: 'https://mern-musebook.vercel.app', // ✅ Replace with your Vercel frontend URL
-  credentials: true
-}));
+app.use(cors());
 app.use(express.json());
 
 // Connect to MongoDB
-mongoose.connect(MONGODB_URI)
-  .then(() => console.log('✅ MongoDB connected'))
-  .catch((err) => console.error('❌ MongoDB connection error:', err));
+mongoose.connect(MONGODB_URI);
+const db = mongoose.connection;
+db.on('error', (err) => console.log('MongoDB connection error:', err));
+db.once('open', () => console.log('MongoDB connected'));
 
 // User Schema
 const userSchema = new mongoose.Schema({
@@ -31,6 +27,7 @@ const userSchema = new mongoose.Schema({
   fullemail: String,
   fullpassword: String,
 });
+
 const User = mongoose.model('User', userSchema);
 
 // Museum Booking Schema
@@ -48,56 +45,51 @@ const bookingSchema = new mongoose.Schema({
   razorpay_signature: String,
   createdAt: { type: Date, default: Date.now }
 });
-const MuseumBooking = mongoose.model('MuseumBooking', bookingSchema);
 
-// Health Check
-app.get('/', (req, res) => {
-  res.send('Backend is working ✅');
-});
+const MuseumBooking = mongoose.model('MuseumBooking', bookingSchema);
 
 // Register User
 app.post('/register', async (req, res) => {
   const { fullName, fullemail, fullpassword } = req.body;
 
-  try {
-    const existingUser = await User.findOne({ fullemail });
-    if (existingUser) {
-      return res.status(400).json({ message: 'Email already registered' });
-    }
-
-    const hashedPassword = await bcrypt.hash(fullpassword, 10);
-    const user = new User({ fullName, fullemail, fullpassword: hashedPassword });
-
-    await user.save();
-    res.json({ message: 'User created successfully' });
-
-  } catch (err) {
-    res.status(500).json({ message: 'Server error', error: err.message });
+  // Check if user already exists
+  const existingUser = await User.findOne({ fullemail });
+  if (existingUser) {
+    return res.status(400).json({ message: 'Email already registered' });
   }
+
+  const hashedPassword = await bcrypt.hash(fullpassword, 10);
+  const user = new User({ fullName, fullemail, fullpassword: hashedPassword });
+
+  await user.save();
+  res.json({ message: 'User created successfully' });
 });
 
 // Login User with JWT
 app.post('/login', async (req, res) => {
   const { email, password } = req.body;
 
-  try {
-    const user = await User.findOne({ fullemail: email });
-    if (!user) {
-      return res.status(400).json({ message: 'User not found' });
-    }
+  console.log("Received login request:", email, password); // ✅ Debugging
 
-    const isMatch = await bcrypt.compare(password, user.fullpassword);
-    if (!isMatch) {
-      return res.status(400).json({ message: 'Invalid password' });
-    }
-
-    const token = jwt.sign({ id: user._id, email: user.fullemail }, JWT_SECRET, { expiresIn: '1h' });
-
-    res.json({ message: 'Login successful', token });
-
-  } catch (err) {
-    res.status(500).json({ message: 'Server error', error: err.message });
+  // Check if user exists (match `email` to `fullemail` in DB)
+  const user = await User.findOne({ fullemail: email });
+  if (!user) {
+    console.log("User not found");
+    return res.status(400).json({ message: 'User not found' });
   }
+
+  // Compare hashed password
+  const isMatch = await bcrypt.compare(password, user.fullpassword);
+  if (!isMatch) {
+    console.log("Invalid password");
+    return res.status(400).json({ message: 'Invalid password' });
+  }
+
+  // Generate JWT Token
+  const token = jwt.sign({ id: user._id, email: user.fullemail }, JWT_SECRET, { expiresIn: '1h' });
+
+  console.log("Login successful, token generated:", token);
+  res.json({ message: 'Login successful', token });
 });
 
 // Razorpay payment order endpoint
@@ -107,11 +99,12 @@ app.post('/api/payOrder', async (req, res) => {
     return res.json({ res: 'error', info: 'Invalid request or missing action parameter.' });
   }
 
-  const razorpay_mode = process.env.RAZORPAY_MODE || 'test';
-  const razorpay_test_key = process.env.RAZORPAY_TEST_KEY;
-  const razorpay_test_secret_key = process.env.RAZORPAY_TEST_SECRET;
-  const razorpay_live_key = process.env.RAZORPAY_LIVE_KEY;
-  const razorpay_live_secret_key = process.env.RAZORPAY_LIVE_SECRET;
+  // Razorpay test credentials
+  const razorpay_mode = 'test';
+  const razorpay_test_key = 'rzp_test_bRz1jQuw4K1bue';
+  const razorpay_test_secret_key = '0YjwdDbh9l93hYVjtMFIBWrt';
+  const razorpay_live_key = 'Your_Live_Key';
+  const razorpay_live_secret_key = 'Your_Live_Secret_Key';
 
   let razorpay_key, authAPIkey;
   if (razorpay_mode === 'test') {
@@ -122,15 +115,23 @@ app.post('/api/payOrder', async (req, res) => {
     authAPIkey = "Basic " + Buffer.from(razorpay_live_key + ":" + razorpay_live_secret_key).toString('base64');
   }
 
+  // Set transaction details
   const order_id = Date.now().toString();
-  const { billing_name, billing_mobile, billing_email, payAmount } = input;
-  const note = `Payment of amount Rs. ${payAmount}`;
+  const billing_name = input.billing_name;
+  const billing_mobile = input.billing_mobile;
+  const billing_email = input.billing_email;
+  const payAmount = input.payAmount;
+
+  const note = "Payment of amount Rs. " + payAmount;
 
   const postdata = {
     amount: payAmount * 100,
     currency: "INR",
     receipt: note,
-    notes: { notes_key_1: note, notes_key_2: "" }
+    notes: {
+      notes_key_1: note,
+      notes_key_2: ""
+    }
   };
 
   try {
@@ -146,24 +147,26 @@ app.post('/api/payOrder', async (req, res) => {
     );
     const orderRes = response.data;
     if (orderRes.id) {
+      const rpay_order_id = orderRes.id;
+      const dataArr = {
+        amount: payAmount,
+        description: "Pay bill of Rs. " + payAmount,
+        rpay_order_id: rpay_order_id,
+        name: billing_name,
+        email: billing_email,
+        mobile: billing_mobile
+      };
       return res.json({
         res: 'success',
         order_number: order_id,
-        userData: {
-          amount: payAmount,
-          description: `Pay bill of Rs. ${payAmount}`,
-          rpay_order_id: orderRes.id,
-          name: billing_name,
-          email: billing_email,
-          mobile: billing_mobile
-        },
-        razorpay_key
+        userData: dataArr,
+        razorpay_key: razorpay_key
       });
     } else {
-      return res.json({ res: 'error', order_id, info: 'Error with payment' });
+      return res.json({ res: 'error', order_id: order_id, info: 'Error with payment' });
     }
   } catch (err) {
-    return res.json({ res: 'error', order_id, info: 'Error with payment', error: err.message });
+    return res.json({ res: 'error', order_id: order_id, info: 'Error with payment', error: err.message });
   }
 });
 
@@ -171,15 +174,25 @@ app.post('/api/payOrder', async (req, res) => {
 app.post('/api/bookMuseum', async (req, res) => {
   try {
     const {
-      name, email, phone, visit_date, museum,
-      adults, children, total,
-      razorpay_payment_id, razorpay_order_id, razorpay_signature
+      name,
+      email,
+      phone,
+      visit_date,
+      museum,
+      adults,
+      children,
+      total,
+      razorpay_payment_id,
+      razorpay_order_id,
+      razorpay_signature
     } = req.body;
 
+    // Basic validation
     if (!name || !email || !phone || !visit_date || !museum || !razorpay_payment_id || !razorpay_order_id) {
       return res.status(400).json({ message: 'Missing required booking/payment details.' });
     }
 
+    // Date validation: only today or future
     const today = new Date();
     today.setHours(0, 0, 0, 0);
     const bookingDate = new Date(visit_date);
@@ -187,10 +200,16 @@ app.post('/api/bookMuseum', async (req, res) => {
       return res.status(400).json({ message: 'Booking date must be today or a future date.' });
     }
 
+    // Enforce per-day ticket limit
     const maxTickets = 10;
     const bookedAgg = await MuseumBooking.aggregate([
       { $match: { visit_date, museum } },
-      { $group: { _id: null, totalBooked: { $sum: { $add: ["$adults", "$children"] } } } }
+      {
+        $group: {
+          _id: null,
+          totalBooked: { $sum: { $add: ["$adults", "$children"] } }
+        }
+      }
     ]);
     const alreadyBooked = bookedAgg.length > 0 ? bookedAgg[0].totalBooked : 0;
     const requestedTickets = (adults || 0) + (children || 0);
@@ -202,8 +221,17 @@ app.post('/api/bookMuseum', async (req, res) => {
     }
 
     const booking = new MuseumBooking({
-      name, email, phone, visit_date, museum, adults, children, total,
-      razorpay_payment_id, razorpay_order_id, razorpay_signature
+      name,
+      email,
+      phone,
+      visit_date,
+      museum,
+      adults,
+      children,
+      total,
+      razorpay_payment_id,
+      razorpay_order_id,
+      razorpay_signature
     });
 
     await booking.save();
@@ -220,6 +248,7 @@ app.get('/api/availability', async (req, res) => {
     return res.status(400).json({ message: 'visit_date query parameter is required.' });
   }
 
+  // List of museums and max tickets per museum
   const museums = [
     "National Museum",
     "Salar Jung Museum",
@@ -229,16 +258,24 @@ app.get('/api/availability', async (req, res) => {
   ];
   const maxTickets = 10;
 
+  // Aggregate bookings for the given date
   try {
     const bookings = await MuseumBooking.aggregate([
       { $match: { visit_date } },
-      { $group: { _id: "$museum", totalBooked: { $sum: { $add: ["$adults", "$children"] } } } }
+      {
+        $group: {
+          _id: "$museum",
+          totalBooked: { $sum: { $add: ["$adults", "$children"] } }
+        }
+      }
     ]);
 
+    // Build availability map
     const availability = {};
     museums.forEach(museum => {
       const booked = bookings.find(b => b._id === museum);
-      availability[museum] = Math.max(maxTickets - (booked ? booked.totalBooked : 0), 0);
+      const available = maxTickets - (booked ? booked.totalBooked : 0);
+      availability[museum] = available > 0 ? available : 0;
     });
 
     res.json(availability);
@@ -247,7 +284,6 @@ app.get('/api/availability', async (req, res) => {
   }
 });
 
-// Start server
 app.listen(PORT, () => {
-  console.log(`🚀 Server running on port ${PORT}`);
+  console.log(`Server is running on port ${PORT}`);
 });
