@@ -32,9 +32,9 @@ const Home = () => {
         </p>
         <div className="btn-group">
           <button className="btn btn-primary">Learn more</button>
-          <Link to="/Booking" className="btn btn-secondary">
-Book Now
-</Link>
+          <Link to="/booknow" className="btn btn-secondary">
+            Book Now
+          </Link>
         </div>
       </div>
     </section>

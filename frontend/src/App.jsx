@@ -6,6 +6,9 @@ import Destination from "../components/Destination";
 import Login from "../components/Login";
 import Signup from "../components/signup";
 import ProtectedRoute from "../components/ProtectedRoute";
+import PackageSection from "../components/PackageSection";
+import GallerySection from "../components/GallerySection";
+import Booknow from "../components/Booknow";
 
 const App = () => {
   // const isAuthenticated = !!localStorage.getItem("token");
@@ -25,14 +28,15 @@ useEffect(() => {
     <Router>
       <Routes>
         <Route path="/login" element={<Login />} />
-        
-
         <Route path="/signup" element={<Signup />} />
         <Route path="/" element={<Navigate to={isAuthenticated ? "/home" : "/login"} />} />
         <Route path="/home" element={isAuthenticated ? <Home /> : <Navigate to="/login" />} />
+        <Route path="/booknow" element={<Booknow />} />
         <Route element={<ProtectedRoute />}>
           <Route path="/gallery" element={<Gallery />} />
           <Route path="/destination" element={<Destination />} />
+          <Route path="/package" element={<PackageSection />} />
+          <Route path="/gallery-section" element={<GallerySection />} />
         </Route>
       </Routes>
     </Router>

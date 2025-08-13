@@ -1,5 +1,5 @@
 import React from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link ,useNavigate } from 'react-router-dom';
 import { IonIcon } from '@ionic/react';
 import { menuOutline, closeOutline, search, logoFacebook, logoTwitter, logoYoutube } from 'ionicons/icons';
 
@@ -19,8 +19,7 @@ const Navbar = () => {
       <div className="header-top">
         <div className="container">
           <Link to="/" className="logo">
-            {/* Use public/images/logo.png if image is in public folder */}
-            <img src="/images/logo.png" alt="Logo" />
+            <img src="/images/logo.png" alt="Tourly logo" />
           </Link>
           
           <div className="header-btn-group" style={{ marginLeft: 'auto' }}>
@@ -57,7 +56,7 @@ const Navbar = () => {
               
               <li><Link to="/destination" className="navbar-link">Destinations</Link></li>
               <li><Link to="/package" className="navbar-link">Packages</Link></li>
-              <li><Link to="/gallery" className="navbar-link">Gallery</Link></li>
+              <li><Link to="/gallery-section" className="navbar-link">Gallery</Link></li>
             </ul>
           </nav>
         </div>
