@@ -332,19 +332,18 @@ body { background: var(--white); }
 .header .btn { --padding: 4px 20px; }
 
 .header .navbar {
-  position: absolute; /* was fixed */
-  top: 70px; /* below header-top, adjust as needed */
-  right: 0;
+  position: fixed;
+  top: 0;
+  right: -300px;
   width: 100%;
   max-width: 300px;
-  height: auto; /* only content height */
-  max-height: none; /* remove forced max-height */
+  height: 100vh; /* full viewport height */
   background: rgba(255,255,255,0.85);
   visibility: hidden;
   pointer-events: none;
   transition: 0.15s ease-in;
   z-index: 3;
-  overflow-y: visible; /* no scroll unless content overflows */
+  overflow-y: auto; /* scroll if needed */
 }
 
 .navbar.active {
@@ -352,8 +351,9 @@ body { background: var(--white); }
   visibility: visible;
   pointer-events: all;
   transition: 0.25s ease-out;
-  height: auto;
-  max-height: none;
+  height: 100vh;
+  max-height: 100vh;
+  overflow-y: auto;
 }
 
 .navbar-top {
