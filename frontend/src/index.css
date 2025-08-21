@@ -338,7 +338,7 @@ body { background: var(--white); }
   width: 100%;
   max-width: 300px;
   height: 100%;
-  background: var(--white);
+  background: rgba(255,255,255,0.85); /* changed from var(--white) */
   visibility: hidden;
   pointer-events: none;
   transition: 0.15s ease-in;
@@ -1556,4 +1556,12 @@ to {
 
   .container { max-width: 1180px; }
 
+}
+
+/* Reduce height of header-bottom container for mobile sidebar */
+@media (max-width: 991px) {
+  .header-bottom .container {
+    min-height: 40px; /* make it shorter */
+    padding-block: 5px;
+  }
 }
