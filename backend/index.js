@@ -64,6 +64,18 @@ const transporter = nodemailer.createTransport({
   }
 });
 
+// Log nodemailer config (do NOT log password)
+console.log("Nodemailer config EMAIL_USER:", process.env.EMAIL_USER);
+
+// Verify transporter on startup
+transporter.verify(function(error, success) {
+  if (error) {
+    console.error("Nodemailer transporter verification failed:", error);
+  } else {
+    console.log("Nodemailer transporter is ready to send emails");
+  }
+});
+
 // Register User
 app.post('/register', async (req, res) => {
   const { fullName, fullemail, fullpassword } = req.body;
