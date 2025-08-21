@@ -344,6 +344,10 @@ body { background: var(--white); }
   transition: 0.15s ease-in;
   z-index: 3;
   overflow-y: auto; /* scroll if needed */
+  border-radius: 25px 0 0 25px; /* rounded left corners */
+  box-shadow: 0 2px 16px rgba(0,0,0,0.08);
+  /* Add padding to bottom for space below gallery section */
+  padding-bottom: 60px;
 }
 
 .navbar.active {
@@ -354,13 +358,16 @@ body { background: var(--white); }
   height: 100vh;
   max-height: 100vh;
   overflow-y: auto;
+  border-radius: 25px 0 0 25px;
+  padding-bottom: 60px;
 }
 
 .navbar-top {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 40px 15px;
+  padding: 25px 15px 10px 15px; /* less bottom padding, more top */
+  margin-top: 10px; /* move logo slightly up */
 }
 
 .navbar-top .logo img { width: 150px; }
