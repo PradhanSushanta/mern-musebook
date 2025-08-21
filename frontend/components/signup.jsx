@@ -11,8 +11,10 @@ const validateName = (name) => {
 
 const validateEmail = (email) => {
   if (!email.trim()) return "Email is required.";
-  // Updated regex: domain extension must be at least 2 characters
-  if (!/^[^\s@]+@[^\s@]+\.[a-zA-Z]{2,}$/.test(email)) return "Invalid email format.";
+  // Improved regex: domain extension must be 2-6 letters and only common TLDs allowed
+  if (
+    !/^[^\s@]+@[^\s@]+\.(com|net|org|in|edu|gov|co|io|me|info|biz|us|uk|ca|de|fr|au|jp|cn|ru|ch|it|nl|se|no|es|mil)$/i.test(email)
+  ) return "Invalid email format.";
   return "";
 };
 
