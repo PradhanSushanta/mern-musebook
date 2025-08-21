@@ -85,7 +85,7 @@ const Signup = () => {
     }
 
     try {
-      const response = await axios.post("https://mern-musebook.onrender.com/signup", {
+      const response = await axios.post("https://mern-musebook.onrender.com/register", {
         fullName,
         fullemail,
         fullpassword
