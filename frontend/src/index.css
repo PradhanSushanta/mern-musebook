@@ -345,7 +345,7 @@ body { background: var(--white); }
   transition: 0.15s ease-in;
   z-index: 3;
   overflow-y: visible;
-  border-radius: 25px 0 0 25px;
+  border-radius: 25px; /* rounded all corners */
   box-shadow: 0 2px 16px rgba(0,0,0,0.08);
   padding-bottom: 60px;
   /* remove margin-right */
@@ -359,7 +359,7 @@ body { background: var(--white); }
   height: auto;
   max-height: none;
   overflow-y: visible;
-  border-radius: 25px 0 0 25px;
+  border-radius: 25px; /* rounded all corners */
   padding-bottom: 60px;
   /* remove margin-right */
 }

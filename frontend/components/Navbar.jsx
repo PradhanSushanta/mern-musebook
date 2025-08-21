@@ -66,15 +66,7 @@ const Navbar = () => {
 
       {/* Mobile sidebar menu */}
       {menuOpen && (
-        <nav
-          className="navbar active"
-          style={{
-            right: 0,
-            visibility: 'visible',
-            pointerEvents: 'all',
-            borderRadius: '25px 0 0 25px'
-          }}
-        >
+        <nav className="navbar active" style={{ right: 0, visibility: 'visible', pointerEvents: 'all' }}>
           <div className="navbar-top">
             <Link to="/" className="logo" onClick={handleMenuClose}>
               <img src="/images/logo.png" alt="Tourly logo" />
