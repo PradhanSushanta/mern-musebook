@@ -113,10 +113,11 @@ const Login = () => {
         </button>
       </form>
       <p>
-          <a href="#" onClick={() => setShowForgot(true)}>Forgot Password?</a>
-        </p>
-        <p>Not registered? <a  onClick={() => navigate("/signup")}>Create an account</a></p>
-        <p>Admin? <a href="admin.php">Login Here</a></p>
+        {/* Remove href, use modal logic only */}
+        <a onClick={() => setShowForgot(true)} style={{cursor: 'pointer'}}>Forgot Password?</a>
+      </p>
+      <p>Not registered? <a  onClick={() => navigate("/signup")}>Create an account</a></p>
+      <p>Admin? <a href="admin.php">Login Here</a></p>
    
      
     </div>
