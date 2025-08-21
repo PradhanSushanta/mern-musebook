@@ -36,7 +36,7 @@ const Login = () => {
       <h1><img src="\images\logo.png" alt="Logo" /></h1>
       <h3>Enter your login credentials</h3>
       <form onSubmit={handleSubmit}>
-        <label htmlFor="username">Username:</label>
+        <label htmlFor="username">Email:</label>
         <input
           type="email"
           placeholder="Enter email"
