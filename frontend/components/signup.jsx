@@ -14,12 +14,15 @@ const validateEmail = (email) => {
   const emailRegex = /^[^\s@]+@(gmail|yahoo|outlook|hotmail|live|aol|icloud|protonmail|zoho|gmx|mail|yandex|rediffmail|fastmail|msn|comcast|verizon|att|bt|sbcglobal|rocketmail|mailinator)\.(com|net|org|in|edu|gov|co|io|me|info|biz|us|uk|ca|de|fr|au|jp|cn|ru|ch|it|nl|se|no|es|mil)$/i;
   if (!emailRegex.test(email)) return "Invalid email provider or domain extension.";
 
-  // Username length check for all providers
+  // Username length and first character check for all providers
   const match = email.match(/^([^\s@]+)@([a-zA-Z0-9\-]+)\.[a-zA-Z]{2,}$/i);
   if (match) {
     const username = match[1];
     if (username.length < 5 || username.length > 30) {
       return "Email username must be 5-30 characters.";
+    }
+    if (!/^[a-zA-Z]/.test(username)) {
+      return "Email username must start with a letter.";
     }
   }
   return "";
