@@ -320,6 +320,7 @@ app.post('/forgot-password/send-otp', async (req, res) => {
     });
     res.json({ success: true, message: "OTP sent to email." });
   } catch (err) {
+    console.error("Nodemailer error:", err); // <-- Add this line
     res.json({ success: false, message: "Failed to send OTP.", error: err.message });
   }
 });
