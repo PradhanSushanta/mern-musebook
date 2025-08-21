@@ -11,10 +11,10 @@ const validateName = (name) => {
 
 const validateEmail = (email) => {
   if (!email.trim()) return "Email is required.";
-  // Only allow common TLDs
+  // Only allow common providers and TLDs
   if (
-    !/^[^\s@]+@[^\s@]+\.(com|net|org|in|edu|gov|co|io|me|info|biz|us|uk|ca|de|fr|au|jp|cn|ru|ch|it|nl|se|no|es|mil)$/i.test(email)
-  ) return "Invalid email format or unsupported domain extension.";
+    !/^[^\s@]+@(gmail|yahoo|outlook|hotmail|live|aol|icloud|protonmail|zoho|gmx|mail|yandex|rediffmail|fastmail|msn|comcast|verizon|att|bt|sbcglobal|rocketmail|mailinator)\.(com|net|org|in|edu|gov|co|io|me|info|biz|us|uk|ca|de|fr|au|jp|cn|ru|ch|it|nl|se|no|es|mil)$/i.test(email)
+  ) return "Invalid email provider or domain extension.";
   return "";
 };
 
