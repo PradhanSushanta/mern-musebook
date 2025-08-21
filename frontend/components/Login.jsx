@@ -5,6 +5,12 @@ import { useNavigate } from "react-router-dom";
 
 const Login = () => {
   const [loginData, setLoginData] = useState({ email: '', password: '' });
+  const [showForgot, setShowForgot] = useState(false);
+  const [forgotEmail, setForgotEmail] = useState('');
+  const [otpSent, setOtpSent] = useState(false);
+  const [otp, setOtp] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [resetStep, setResetStep] = useState(1);
   const navigate = useNavigate();
 
   const handleChange = (e) => {
@@ -30,6 +36,39 @@ const Login = () => {
       alert('Login failed! Check console for details.');
     }
   };
+
+  const handleForgotSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      await axios.post('https://mern-musebook.onrender.com/forgot-password', { email: forgotEmail });
+      setOtpSent(true);
+      setResetStep(2);
+      alert('OTP sent to your email!');
+    } catch (error) {
+      alert('Failed to send OTP. Check email and try again.');
+    }
+  };
+
+  const handleResetSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      await axios.post('https://mern-musebook.onrender.com/reset-password', {
+        email: forgotEmail,
+        otp,
+        newPassword
+      });
+      alert('Password reset successful! Please login.');
+      setShowForgot(false);
+      setOtpSent(false);
+      setResetStep(1);
+      setForgotEmail('');
+      setOtp('');
+      setNewPassword('');
+    } catch (error) {
+      alert('Failed to reset password. Check OTP and try again.');
+    }
+  };
+
   return (
     <div className="body-container">
       <div className="main-container">
@@ -73,13 +112,55 @@ const Login = () => {
           Login
         </button>
       </form>
-      <p><a href="forgot_password.php">Forgot Password?</a></p>
+      <p>
+          <a href="#" onClick={() => setShowForgot(true)}>Forgot Password?</a>
+        </p>
         <p>Not registered? <a  onClick={() => navigate("/signup")}>Create an account</a></p>
         <p>Admin? <a href="admin.php">Login Here</a></p>
    
      
     </div>
     </div>
+    {/* Forgot Password Modal */}
+    {showForgot && (
+        <div className="modal">
+          <div className="modal-content">
+            <button style={{float: 'right'}} onClick={() => setShowForgot(false)}>X</button>
+            <h3>Forgot Password</h3>
+            {resetStep === 1 && (
+              <form onSubmit={handleForgotSubmit}>
+                <label>Email:</label>
+                <input
+                  type="email"
+                  value={forgotEmail}
+                  onChange={e => setForgotEmail(e.target.value)}
+                  required
+                />
+                <button type="submit">Send OTP</button>
+              </form>
+            )}
+            {resetStep === 2 && (
+              <form onSubmit={handleResetSubmit}>
+                <label>OTP:</label>
+                <input
+                  type="text"
+                  value={otp}
+                  onChange={e => setOtp(e.target.value)}
+                  required
+                />
+                <label>New Password:</label>
+                <input
+                  type="password"
+                  value={newPassword}
+                  onChange={e => setNewPassword(e.target.value)}
+                  required
+                />
+                <button type="submit">Reset Password</button>
+              </form>
+            )}
+          </div>
+        </div>
+      )}
   );
 }
 export default Login;
