@@ -9,6 +9,7 @@ import ProtectedRoute from "../components/ProtectedRoute";
 import PackageSection from "../components/PackageSection";
 import GallerySection from "../components/GallerySection";
 import Booknow from "../components/Booknow";
+import ForgotPassword from "../components/ForgotPassword";
 
 const App = () => {
   // const isAuthenticated = !!localStorage.getItem("token");
@@ -32,6 +33,7 @@ useEffect(() => {
         <Route path="/" element={<Navigate to={isAuthenticated ? "/home" : "/login"} />} />
         <Route path="/home" element={isAuthenticated ? <Home /> : <Navigate to="/login" />} />
         <Route path="/booknow" element={<Booknow />} />
+        <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route element={<ProtectedRoute />}>
           
           <Route path="/destination" element={<Destination />} />

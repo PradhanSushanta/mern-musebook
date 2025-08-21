@@ -4,6 +4,7 @@ const cors = require('cors');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const axios = require('axios');
+const nodemailer = require('nodemailer');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -50,6 +51,18 @@ const bookingSchema = new mongoose.Schema({
 });
 
 const MuseumBooking = mongoose.model('MuseumBooking', bookingSchema);
+
+// In-memory OTP store (for demo only)
+const otpStore = {};
+
+// Setup nodemailer transporter (use your email credentials)
+const transporter = nodemailer.createTransport({
+  service: 'gmail',
+  auth: {
+    user: process.env.EMAIL_USER, // your gmail address
+    pass: process.env.EMAIL_PASS  // your gmail app password
+  }
+});
 
 // Register User
 app.post('/register', async (req, res) => {
@@ -285,6 +298,47 @@ app.get('/api/availability', async (req, res) => {
   } catch (err) {
     res.status(500).json({ message: 'Error fetching availability.', error: err.message });
   }
+});
+
+// Send OTP to email
+app.post('/forgot-password/send-otp', async (req, res) => {
+  const { email } = req.body;
+  const user = await User.findOne({ fullemail: email });
+  if (!user) {
+    return res.json({ success: false, message: "Email not registered." });
+  }
+  const otp = Math.floor(100000 + Math.random() * 900000).toString();
+  otpStore[email] = otp;
+
+  // Send email
+  try {
+    await transporter.sendMail({
+      from: process.env.EMAIL_USER,
+      to: email,
+      subject: "MuseBook Password Reset OTP",
+      text: `Your OTP for password reset is: ${otp}`
+    });
+    res.json({ success: true, message: "OTP sent to email." });
+  } catch (err) {
+    res.json({ success: false, message: "Failed to send OTP.", error: err.message });
+  }
+});
+
+// Reset password
+app.post('/forgot-password/reset', async (req, res) => {
+  const { email, newPassword, otp } = req.body;
+  const user = await User.findOne({ fullemail: email });
+  if (!user) {
+    return res.json({ success: false, message: "Email not registered." });
+  }
+  if (otpStore[email] !== otp) {
+    return res.json({ success: false, message: "Invalid OTP." });
+  }
+  const hashedPassword = await bcrypt.hash(newPassword, 10);
+  user.fullpassword = hashedPassword;
+  await user.save();
+  delete otpStore[email];
+  res.json({ success: true, message: "Password reset successful." });
 });
 
 app.listen(PORT, () => {
