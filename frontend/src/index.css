@@ -334,7 +334,7 @@ body { background: var(--white); }
 .header .navbar {
   position: absolute;
   top: 70px; /* below header-top, adjust as needed */
-  right: 16px; /* offset from right edge */
+  right: 32px; /* increased right margin */
   width: 100%;
   max-width: 300px;
   height: auto; /* only content height */
@@ -352,7 +352,7 @@ body { background: var(--white); }
 }
 
 .navbar.active {
-  right: 20px; /* offset from right edge */
+  right: 32px; /* increased right margin */
   visibility: visible;
   pointer-events: all;
   transition: 0.25s ease-out;
