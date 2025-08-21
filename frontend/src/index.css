@@ -352,7 +352,7 @@ body { background: var(--white); }
 }
 
 .navbar.active {
-  right: 16px; /* offset from right edge */
+  right: 20px; /* offset from right edge */
   visibility: visible;
   pointer-events: all;
   transition: 0.25s ease-out;
