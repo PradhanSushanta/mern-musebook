@@ -30,10 +30,7 @@ const userSchema = new mongoose.Schema({
   fullName: String,
   fullemail: String,
   fullpassword: String,
-  otp: String,                // store OTP
-  otpExpiry: Date             // store expiry time
 });
-
 
 const User = mongoose.model('User', userSchema);
 
@@ -56,10 +53,7 @@ const bookingSchema = new mongoose.Schema({
 const MuseumBooking = mongoose.model('MuseumBooking', bookingSchema);
 
 // In-memory OTP store (for demo only)
-user.otp = otp;
-user.otpExpiry = Date.now() + 5 * 60 * 1000; // 5 min expiry
-await user.save();
-
+const otpStore = {};
 
 // Setup nodemailer transporter (use your email credentials)
 const transporter = nodemailer.createTransport({
@@ -325,63 +319,40 @@ app.post('/forgot-password/send-otp', async (req, res) => {
   if (!user) {
     return res.json({ success: false, message: "Email not registered." });
   }
-
   const otp = Math.floor(100000 + Math.random() * 900000).toString();
+  otpStore[email] = otp;
 
-  // Save OTP & expiry in DB (valid for 5 mins)
-  user.otp = otp;
-  user.otpExpiry = Date.now() + 5 * 60 * 1000; // 5 minutes
-  await user.save();
-
+  // Send email
   try {
     await transporter.sendMail({
-      from: "sushantapradhankumar67@gmail.com", // use same gmail as transporter
+      from: "sushantapradhankumar67@gmail.com",
       to: email,
       subject: "MuseBook Password Reset OTP",
-      text: `Your OTP for password reset is: ${otp}. It is valid for 5 minutes.`
+      text: `Your OTP for password reset is: ${otp}`
     });
     res.json({ success: true, message: "OTP sent to email." });
   } catch (err) {
-    console.error("Nodemailer error:", err);
-    res.json({ success: false, message: "Failed to send OTP.", error: err.message });
+    console.error("Nodemailer error:", err); // Log full error object
+    res.json({ success: false, message: "Failed to send OTP.", error: err });
   }
 });
 
-// Reset password
 // Reset password
 app.post('/forgot-password/reset', async (req, res) => {
   const { email, newPassword, otp } = req.body;
-
   const user = await User.findOne({ fullemail: email });
-  console.log("Reset request -> email:", email, "entered OTP:", otp);
-
   if (!user) {
     return res.json({ success: false, message: "Email not registered." });
   }
-
-  console.log("OTP in DB:", user.otp, "Expiry:", user.otpExpiry);
-
-  // Check OTP + expiry
-  if (!user.otp || user.otp.trim() !== String(otp).trim()) {
+  if (otpStore[email] !== otp) {
     return res.json({ success: false, message: "Invalid OTP." });
   }
-  if (user.otpExpiry < Date.now()) {
-    return res.json({ success: false, message: "OTP expired." });
-  }
-
-  // Reset password
   const hashedPassword = await bcrypt.hash(newPassword, 10);
   user.fullpassword = hashedPassword;
-
-  // Clear OTP after use
-  user.otp = undefined;
-  user.otpExpiry = undefined;
   await user.save();
-
+  delete otpStore[email];
   res.json({ success: true, message: "Password reset successful." });
 });
-
-
 
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
