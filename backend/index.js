@@ -53,7 +53,10 @@ const bookingSchema = new mongoose.Schema({
 const MuseumBooking = mongoose.model('MuseumBooking', bookingSchema);
 
 // In-memory OTP store (for demo only)
-const otpStore = {};
+user.otp = otp;
+user.otpExpiry = Date.now() + 5 * 60 * 1000; // 5 min expiry
+await user.save();
+
 
 // Setup nodemailer transporter (use your email credentials)
 const transporter = nodemailer.createTransport({
