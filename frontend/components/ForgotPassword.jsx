@@ -21,10 +21,13 @@ const ForgotPassword = () => {
         setStep(2);
         alert("OTP sent to your email.");
       } else {
-        alert(res.data.message || "Failed to send OTP.");
+        alert(res.data.message || "Failed to send OTP. Please check your email address and try again.");
       }
     } catch (err) {
-      alert("Error sending OTP.");
+      alert(
+        err.response?.data?.message ||
+        "Error sending OTP. Please check your network connection or try again later."
+      );
     }
   };
 
