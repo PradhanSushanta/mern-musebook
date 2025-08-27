@@ -352,6 +352,7 @@ app.post('/forgot-password/send-otp', async (req, res) => {
 
 // Reset password
 // Send OTP route
+// Send OTP route
 app.post('/forgot-password/send-otp', async (req, res) => {
   const { email } = req.body;
   const user = await User.findOne({ fullemail: email });
@@ -373,6 +374,7 @@ app.post('/forgot-password/send-otp', async (req, res) => {
     res.json({ success: false, message: "Failed to send OTP.", error: err });
   }
 });
+
 
 // Reset Password route
 app.post('/forgot-password/reset', async (req, res) => {
