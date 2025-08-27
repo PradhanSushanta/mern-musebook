@@ -325,72 +325,46 @@ app.get('/api/availability', async (req, res) => {
   }
 });
 
-// Send OTP to email
-app.post('/forgot-password/send-otp', async (req, res) => {
-  const { email } = req.body;
-  const user = await User.findOne({ fullemail: email });
-  if (!user) {
-    return res.json({ success: false, message: "Email not registered." });
-  }
-  const otp = Math.floor(100000 + Math.random() * 900000).toString();
-  otpStore[email] = otp;
 
-  // Send email
-  try {
-    await transporter.sendMail({
-      from: "sushantapradhankumar67@gmail.com",
-      to: email,
-      subject: "MuseBook Password Reset OTP",
-      text: `Your OTP for password reset is: ${otp}`
-    });
-    res.json({ success: true, message: "OTP sent to email." });
-  } catch (err) {
-    console.error("Nodemailer error:", err); // Log full error object
-    res.json({ success: false, message: "Failed to send OTP.", error: err });
-  }
-});
 
-// Reset password
-// Send OTP route
 // Send OTP route
 app.post('/forgot-password/send-otp', async (req, res) => {
-  const { email } = req.body;
-  const user = await User.findOne({ fullemail: email });
-  if (!user) return res.json({ success: false, message: "Email not registered." });
+  const { email } = req.body;
+  const user = await User.findOne({ fullemail: email });
+  if (!user) return res.json({ success: false, message: "Email not registered." });
 
-  const otp = Math.floor(100000 + Math.random() * 900000).toString();
-  await Otp.deleteMany({ email }); // clean old OTPs
-  await Otp.create({ email, otp });
+  const otp = Math.floor(100000 + Math.random() * 900000).toString();
+  await Otp.deleteMany({ email }); // Remove old OTPs
+  await Otp.create({ email, otp }); // Save new OTP in DB
 
-  try {
-    await transporter.sendMail({
-      from: "sushantapradhankumar67@gmail.com",
-      to: email,
-      subject: "MuseBook Password Reset OTP",
-      text: `Your OTP for password reset is: ${otp}`
-    });
-    res.json({ success: true, message: "OTP sent to email." });
-  } catch (err) {
-    res.json({ success: false, message: "Failed to send OTP.", error: err });
-  }
+  try {
+    await transporter.sendMail({
+      from: "sushantapradhankumar67@gmail.com",
+      to: email,
+      subject: "MuseBook Password Reset OTP",
+      text: `Your OTP for password reset is: ${otp}`
+    });
+    res.json({ success: true, message: "OTP sent to email." });
+  } catch (err) {
+    res.json({ success: false, message: "Failed to send OTP.", error: err });
+  }
 });
-
 
 // Reset Password route
 app.post('/forgot-password/reset', async (req, res) => {
-  const { email, newPassword, otp } = req.body;
-  const user = await User.findOne({ fullemail: email });
-  if (!user) return res.json({ success: false, message: "Email not registered." });
+  const { email, newPassword, otp } = req.body;
+  const user = await User.findOne({ fullemail: email });
+  if (!user) return res.json({ success: false, message: "Email not registered." });
 
-  const record = await Otp.findOne({ email, otp });
-  if (!record) return res.json({ success: false, message: "Invalid OTP or expired." });
+  const record = await Otp.findOne({ email, otp });
+  if (!record) return res.json({ success: false, message: "Invalid OTP or expired." });
 
-  const hashedPassword = await bcrypt.hash(newPassword, 10);
-  user.fullpassword = hashedPassword;
-  await user.save();
-  await Otp.deleteMany({ email }); // delete once used
+  const hashedPassword = await bcrypt.hash(newPassword, 10);
+  user.fullpassword = hashedPassword;
+  await user.save();
+  await Otp.deleteMany({ email });
 
-  res.json({ success: true, message: "Password reset successful." });
+  res.json({ success: true, message: "Password reset successful." });
 });
 
 
