@@ -6,7 +6,6 @@ const ForgotPassword = () => {
   const [step, setStep] = useState(1);
   const [email, setEmail] = useState("");
   const [otp, setOtp] = useState("");
-  const [serverOtp, setServerOtp] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const navigate = useNavigate();
@@ -17,7 +16,6 @@ const ForgotPassword = () => {
     try {
       const res = await axios.post("https://mern-musebook.onrender.com/forgot-password/send-otp", { email });
       if (res.data.success) {
-        setServerOtp(res.data.otp); // For demo, backend should not send OTP to frontend!
         setStep(2);
         alert("OTP sent to your email.");
       } else {
@@ -31,15 +29,10 @@ const ForgotPassword = () => {
     }
   };
 
-  // Step 2: Verify OTP
+  // Step 2: Verify OTP (move verification to backend during password reset)
   const handleVerifyOtp = (e) => {
     e.preventDefault();
-    // For demo, compare with serverOtp. In real, send to backend for verification.
-    if (otp === serverOtp) {
-      setStep(3);
-    } else {
-      alert("Invalid OTP.");
-    }
+    setStep(3);
   };
 
   // Step 3: Reset password
@@ -126,5 +119,7 @@ const ForgotPassword = () => {
     </div>
   );
 };
+
+
 
 export default ForgotPassword;
