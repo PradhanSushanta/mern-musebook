@@ -325,7 +325,7 @@ app.post('/forgot-password/send-otp', async (req, res) => {
   // Send email
   try {
     await transporter.sendMail({
-      from: process.env.EMAIL_USER,
+      from: "sushantapradhankumar67@gmail.com",
       to: email,
       subject: "MuseBook Password Reset OTP",
       text: `Your OTP for password reset is: ${otp}`
