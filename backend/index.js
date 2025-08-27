@@ -9,29 +9,21 @@ require('dotenv').config();
 
 const app = express();
 
-// CORS middleware at the very top
+// CORS middleware FIRST, before any other middleware
 app.use(cors({
-  origin: 'https://mern-musebook.vercel.app', // ✅ Replace with your Vercel frontend URL
+  origin: 'https://mern-musebook.vercel.app',
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization']
 }));
 
-// Explicitly handle all OPTIONS requests for CORS preflight
-app.options('*', cors({
-  origin: 'https://mern-musebook.vercel.app', // ✅ Replace with your Vercel frontend URL
-  credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization']
-}));
-
-// Fallback: set CORS headers for all responses (for extra safety)
-app.use((req, res, next) => {
+// Catch-all OPTIONS handler for CORS preflight
+app.options('*', (req, res) => {
   res.header('Access-Control-Allow-Origin', 'https://mern-musebook.vercel.app');
   res.header('Access-Control-Allow-Credentials', 'true');
   res.header('Access-Control-Allow-Methods', 'GET,POST,PUT,DELETE,OPTIONS');
   res.header('Access-Control-Allow-Headers', 'Content-Type,Authorization');
-  next();
+  res.sendStatus(200);
 });
 
 app.use(express.json());
@@ -379,6 +371,14 @@ app.post('/forgot-password/reset', async (req, res) => {
   res.json({ success: true, message: "Password reset successful." });
 });
 
+// Health check endpoint (optional, helps keep Render awake)
+app.get('/health', (req, res) => {
+  res.send('OK');
+});
+
+app.listen(PORT, () => {
+  console.log(`Server is running on port ${PORT}`);
+});
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
 });
