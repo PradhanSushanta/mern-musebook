@@ -353,12 +353,16 @@ app.post('/forgot-password/reset', async (req, res) => {
   const { email, newPassword, otp } = req.body;
 
   const user = await User.findOne({ fullemail: email });
+  console.log("Reset request -> email:", email, "entered OTP:", otp);
+
   if (!user) {
     return res.json({ success: false, message: "Email not registered." });
   }
 
+  console.log("OTP in DB:", user.otp, "Expiry:", user.otpExpiry);
+
   // Check OTP + expiry
-  if (!user.otp || user.otp !== String(otp)) {
+  if (!user.otp || user.otp.trim() !== String(otp).trim()) {
     return res.json({ success: false, message: "Invalid OTP." });
   }
   if (user.otpExpiry < Date.now()) {
@@ -376,6 +380,7 @@ app.post('/forgot-password/reset', async (req, res) => {
 
   res.json({ success: true, message: "Password reset successful." });
 });
+
 
 
 app.listen(PORT, () => {
