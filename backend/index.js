@@ -52,8 +52,21 @@ const bookingSchema = new mongoose.Schema({
 
 const MuseumBooking = mongoose.model('MuseumBooking', bookingSchema);
 
-// In-memory OTP store (for demo only)
-const otpStore = {};
+// Example OTP Mongo Schema
+const OtpSchema = new mongoose.Schema({
+  email: String,
+  otp: String,
+  createdAt: { type: Date, default: Date.now, expires: 300 } // expires in 5 min
+});
+const Otp = mongoose.model('Otp', OtpSchema);
+
+// To set
+await Otp.create({ email, otp });
+// To get & check
+const record = await Otp.findOne({ email, otp });
+if (!record) return res.json({ success: false, message: "Invalid OTP." });
+await record.deleteOne(); // Remove after use
+
 
 // Setup nodemailer transporter (use your email credentials)
 const transporter = nodemailer.createTransport({
