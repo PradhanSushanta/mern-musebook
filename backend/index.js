@@ -7,17 +7,25 @@ const axios = require('axios');
 const nodemailer = require('nodemailer');
 
 const app = express();
-const PORT = process.env.PORT || 5000;
-const MONGODB_URI = process.env.MONGODB_URI;
-const JWT_SECRET = process.env.JWT_SECRET;
 
-
-// Middleware
+// CORS middleware at the very top
 app.use(cors({
   origin: 'https://mern-musebook.vercel.app', // ✅ Replace with your Vercel frontend URL
   credentials: true
 }));
+
+// Handle preflight requests for all routes
+app.options('*', cors({
+  origin: 'https://mern-musebook.vercel.app', // ✅ Replace with your Vercel frontend URL
+  credentials: true
+}));
+
 app.use(express.json());
+
+const PORT = process.env.PORT || 5000;
+const MONGODB_URI = process.env.MONGODB_URI;
+const JWT_SECRET = process.env.JWT_SECRET;
+
 
 // Connect to MongoDB
 mongoose.connect(MONGODB_URI);
