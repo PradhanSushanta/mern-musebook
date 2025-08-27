@@ -351,21 +351,46 @@ app.post('/forgot-password/send-otp', async (req, res) => {
 });
 
 // Reset password
+// Send OTP route
+app.post('/forgot-password/send-otp', async (req, res) => {
+  const { email } = req.body;
+  const user = await User.findOne({ fullemail: email });
+  if (!user) return res.json({ success: false, message: "Email not registered." });
+
+  const otp = Math.floor(100000 + Math.random() * 900000).toString();
+  await Otp.deleteMany({ email }); // clean old OTPs
+  await Otp.create({ email, otp });
+
+  try {
+    await transporter.sendMail({
+      from: "sushantapradhankumar67@gmail.com",
+      to: email,
+      subject: "MuseBook Password Reset OTP",
+      text: `Your OTP for password reset is: ${otp}`
+    });
+    res.json({ success: true, message: "OTP sent to email." });
+  } catch (err) {
+    res.json({ success: false, message: "Failed to send OTP.", error: err });
+  }
+});
+
+// Reset Password route
 app.post('/forgot-password/reset', async (req, res) => {
   const { email, newPassword, otp } = req.body;
   const user = await User.findOne({ fullemail: email });
-  if (!user) {
-    return res.json({ success: false, message: "Email not registered." });
-  }
-  if (otpStore[email] !== otp) {
-    return res.json({ success: false, message: "Invalid OTP." });
-  }
+  if (!user) return res.json({ success: false, message: "Email not registered." });
+
+  const record = await Otp.findOne({ email, otp });
+  if (!record) return res.json({ success: false, message: "Invalid OTP or expired." });
+
   const hashedPassword = await bcrypt.hash(newPassword, 10);
   user.fullpassword = hashedPassword;
   await user.save();
-  delete otpStore[email];
+  await Otp.deleteMany({ email }); // delete once used
+
   res.json({ success: true, message: "Password reset successful." });
 });
+
 
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
