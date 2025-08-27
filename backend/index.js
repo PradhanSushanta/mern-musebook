@@ -5,33 +5,19 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const axios = require('axios');
 const nodemailer = require('nodemailer');
-require('dotenv').config();
 
 const app = express();
-
-// CORS middleware FIRST, before any other middleware
-app.use(cors({
-  origin: 'https://mern-musebook.vercel.app',
-  credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization']
-}));
-
-// Catch-all OPTIONS handler for CORS preflight
-app.options('*', (req, res) => {
-  res.header('Access-Control-Allow-Origin', 'https://mern-musebook.vercel.app');
-  res.header('Access-Control-Allow-Credentials', 'true');
-  res.header('Access-Control-Allow-Methods', 'GET,POST,PUT,DELETE,OPTIONS');
-  res.header('Access-Control-Allow-Headers', 'Content-Type,Authorization');
-  res.sendStatus(200);
-});
-
-app.use(express.json());
-
 const PORT = process.env.PORT || 5000;
 const MONGODB_URI = process.env.MONGODB_URI;
 const JWT_SECRET = process.env.JWT_SECRET;
 
+
+// Middleware
+app.use(cors({
+  origin: 'https://mern-musebook.vercel.app', // ✅ Replace with your Vercel frontend URL
+  credentials: true
+}));
+app.use(express.json());
 
 // Connect to MongoDB
 mongoose.connect(MONGODB_URI);
@@ -66,29 +52,29 @@ const bookingSchema = new mongoose.Schema({
 
 const MuseumBooking = mongoose.model('MuseumBooking', bookingSchema);
 
-// In-memory OTP store (for demo only)
-const otpStore = {};
+// // In-memory OTP store (for demo only)
+// const otpStore = {};
 
-// Setup nodemailer transporter (use your email credentials)
-const transporter = nodemailer.createTransport({
-  service: 'gmail',
-  auth: {
-    user: process.env.EMAIL_USER, // your gmail address
-    pass: process.env.EMAIL_PASS  // your gmail app password
-  }
-});
+// // Setup nodemailer transporter (use your email credentials)
+// const transporter = nodemailer.createTransport({
+//   service: 'gmail',
+//   auth: {
+//     user: process.env.EMAIL_USER, // your gmail address
+//     pass: process.env.EMAIL_PASS  // your gmail app password
+//   }
+// });
 
-// Log nodemailer config (do NOT log password)
-console.log("Nodemailer config EMAIL_USER:", process.env.EMAIL_USER);
+// // Log nodemailer config (do NOT log password)
+// console.log("Nodemailer config EMAIL_USER:", process.env.EMAIL_USER);
 
-// Verify transporter on startup
-transporter.verify(function(error, success) {
-  if (error) {
-    console.error("Nodemailer transporter verification failed:", error);
-  } else {
-    console.log("Nodemailer transporter is ready to send emails");
-  }
-});
+// // Verify transporter on startup
+// transporter.verify(function(error, success) {
+//   if (error) {
+//     console.error("Nodemailer transporter verification failed:", error);
+//   } else {
+//     console.log("Nodemailer transporter is ready to send emails");
+//   }
+// });
 
 // Register User
 app.post('/register', async (req, res) => {
@@ -327,57 +313,100 @@ app.get('/api/availability', async (req, res) => {
 });
 
 // Send OTP to email
-app.post('/forgot-password/send-otp', async (req, res) => {
-  const { email } = req.body;
-  const user = await User.findOne({ fullemail: email });
-  if (!user) {
-    return res.json({ success: false, message: "Email not registered." });
-  }
-  const otp = Math.floor(100000 + Math.random() * 900000).toString();
-  otpStore[email] = otp;
+// app.post('/forgot-password/send-otp', async (req, res) => {
+//   const { email } = req.body;
+//   const user = await User.findOne({ fullemail: email });
+//   if (!user) {
+//     return res.json({ success: false, message: "Email not registered." });
+//   }
+//   const otp = Math.floor(100000 + Math.random() * 900000).toString();
+//   otpStore[email] = otp;
 
-  // Send email
-  try {
-    await transporter.sendMail({
-      from: process.env.EMAIL_USER,
-      to: email,
-      subject: "MuseBook Password Reset OTP",
-      text: `Your OTP for password reset is: ${otp}`
-    });
-    res.json({ success: true, message: "OTP sent to email." });
-  } catch (err) {
-    // Enhanced error logging for debugging
-    console.error("Nodemailer error:", err && err.stack ? err.stack : err);
-    console.error("EMAIL_USER:", process.env.EMAIL_USER);
-    console.error("EMAIL_PASS:", process.env.EMAIL_PASS ? "Loaded" : "Missing");
-    res.json({ success: false, message: "Failed to send OTP." });
+//   // Send email
+//   try {
+//     await transporter.sendMail({
+//       from: process.env.EMAIL_USER,
+//       to: email,
+//       subject: "MuseBook Password Reset OTP",
+//       text: `Your OTP for password reset is: ${otp}`
+//     });
+//     res.json({ success: true, message: "OTP sent to email." });
+//   } catch (err) {
+//     console.error("Nodemailer error:", err); // Log full error object
+//     res.json({ success: false, message: "Failed to send OTP.", error: err });
+//   }
+// });
+
+// // Reset password
+// app.post('/forgot-password/reset', async (req, res) => {
+//   const { email, newPassword, otp } = req.body;
+//   const user = await User.findOne({ fullemail: email });
+//   if (!user) {
+//     return res.json({ success: false, message: "Email not registered." });
+//   }
+//   if (otpStore[email] !== otp) {
+//     return res.json({ success: false, message: "Invalid OTP." });
+//   }
+//   const hashedPassword = await bcrypt.hash(newPassword, 10);
+//   user.fullpassword = hashedPassword;
+//   await user.save();
+//   delete otpStore[email];
+//   res.json({ success: true, message: "Password reset successful." });
+// });
+
+// ✅ OTP store (in memory)
+let otpStore = {};
+
+// ✅ Mail transporter
+const transporter = nodemailer.createTransport({
+  service: "gmail",
+  auth: {
+    user: "musebook080@gmail.com",
+    pass: "gqhw ivij eekn flbz", // Gmail App Password
+  },
+});
+
+// 👉 Forgot Password
+app.post("/api/forgot-password", async (req, res) => {
+  const { username, method } = req.body;
+
+  const user = users.find((u) => u.username === username);
+  if (!user) return res.status(404).json({ message: "User not found" });
+
+  if (method === "otp") {
+    const otp = Math.floor(100000 + Math.random() * 900000);
+    otpStore[user.id] = otp;
+
+    try {
+      await transporter.sendMail({
+        from: '"MuseBook" <musebook080@gmail.com>',
+        to: user.email,
+        subject: "Your OTP for Password Reset",
+        html: `<h3>Your OTP is: <b>${otp}</b></h3>`,
+      });
+
+      return res.json({ message: "OTP sent successfully", redirect: "/verify-otp", userId: user.id });
+    } catch (error) {
+      console.error("Mail error:", error);
+      return res.status(500).json({ message: "Failed to send OTP" });
+    }
+  } else if (method === "old_password") {
+    return res.json({ message: "Proceed with old password verification", redirect: "/verify-old-password" });
+  } else {
+    return res.status(400).json({ message: "Invalid method" });
   }
 });
 
-// Reset password
-app.post('/forgot-password/reset', async (req, res) => {
-  const { email, newPassword, otp } = req.body;
-  const user = await User.findOne({ fullemail: email });
-  if (!user) {
-    return res.json({ success: false, message: "Email not registered." });
-  }
-  if (otpStore[email] !== otp) {
-    return res.json({ success: false, message: "Invalid OTP." });
-  }
-  const hashedPassword = await bcrypt.hash(newPassword, 10);
-  user.fullpassword = hashedPassword;
-  await user.save();
-  delete otpStore[email];
-  res.json({ success: true, message: "Password reset successful." });
-});
+// 👉 Verify OTP
+app.post("/api/verify-otp", (req, res) => {
+  const { userId, otp } = req.body;
 
-// Health check endpoint (optional, helps keep Render awake)
-app.get('/health', (req, res) => {
-  res.send('OK');
-});
-
-app.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT}`);
+  if (otpStore[userId] && otpStore[userId] == otp) {
+    delete otpStore[userId]; // clear OTP after success
+    return res.json({ message: "OTP verified successfully", redirect: "/reset-password" });
+  } else {
+    return res.status(400).json({ message: "Invalid or expired OTP" });
+  }
 });
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
