@@ -5,6 +5,7 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const axios = require('axios');
 const nodemailer = require('nodemailer');
+require('dotenv').config();
 
 const app = express();
 
