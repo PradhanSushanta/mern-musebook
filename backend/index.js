@@ -11,14 +11,27 @@ const app = express();
 // CORS middleware at the very top
 app.use(cors({
   origin: 'https://mern-musebook.vercel.app', // ✅ Replace with your Vercel frontend URL
-  credentials: true
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
 }));
 
-// Handle preflight requests for all routes
+// Explicitly handle all OPTIONS requests for CORS preflight
 app.options('*', cors({
   origin: 'https://mern-musebook.vercel.app', // ✅ Replace with your Vercel frontend URL
-  credentials: true
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
 }));
+
+// Fallback: set CORS headers for all responses (for extra safety)
+app.use((req, res, next) => {
+  res.header('Access-Control-Allow-Origin', 'https://mern-musebook.vercel.app');
+  res.header('Access-Control-Allow-Credentials', 'true');
+  res.header('Access-Control-Allow-Methods', 'GET,POST,PUT,DELETE,OPTIONS');
+  res.header('Access-Control-Allow-Headers', 'Content-Type,Authorization');
+  next();
+});
 
 app.use(express.json());
 
