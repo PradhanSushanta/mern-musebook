@@ -1,196 +1,125 @@
 import React, { useState } from "react";
+import axios from "axios";
 import { useNavigate } from "react-router-dom";
 
 const ForgotPassword = () => {
-  const [username, setUsername] = useState("");
-  const [method, setMethod] = useState("");
-  const [message, setMessage] = useState("");
+  const [step, setStep] = useState(1);
+  const [email, setEmail] = useState("");
+  const [otp, setOtp] = useState("");
+  const [serverOtp, setServerOtp] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const navigate = useNavigate();
 
-  const handleSubmit = async (e) => {
+  // Step 1: Send OTP to email
+  const handleSendOtp = async (e) => {
     e.preventDefault();
+    try {
+      const res = await axios.post("https://mern-musebook.onrender.com/forgot-password/send-otp", { email });
+      if (res.data.success) {
+        setServerOtp(res.data.otp); // For demo, backend should not send OTP to frontend!
+        setStep(2);
+        alert("OTP sent to your email.");
+      } else {
+        alert(res.data.message || "Failed to send OTP.");
+      }
+    } catch (err) {
+      alert("Error sending OTP.");
+    }
+  };
 
-    if (!username || !method) {
-      setMessage("Please fill in all fields.");
+  // Step 2: Verify OTP
+  const handleVerifyOtp = (e) => {
+    e.preventDefault();
+    // For demo, compare with serverOtp. In real, send to backend for verification.
+    if (otp === serverOtp) {
+      setStep(3);
+    } else {
+      alert("Invalid OTP.");
+    }
+  };
+
+  // Step 3: Reset password
+  const handleResetPassword = async (e) => {
+    e.preventDefault();
+    if (newPassword !== confirmPassword) {
+      alert("Passwords do not match.");
       return;
     }
-
     try {
-      // Call your backend API
-      const response = await fetch("https://mern-musebook.onrender.com/api/forgot-password", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ username, method }),
-        credentials: "include",
+      const res = await axios.post("https://mern-musebook.onrender.com/forgot-password/reset", {
+        email,
+        newPassword,
+        otp
       });
-
-      const data = await response.json();
-
-      if (response.ok) {
-        if (method === "otp") {
-          navigate("/verify-otp");
-        } else if (method === "old_password") {
-          navigate("/verify-old-password");
-        }
+      if (res.data.success) {
+        alert("Password reset successful!");
+        navigate("/login");
       } else {
-        setMessage(data.message || "Something went wrong.");
+        alert(res.data.message || "Failed to reset password.");
       }
-    } catch (error) {
-      setMessage("Server error. Please try again later.");
+    } catch (err) {
+      alert("Error resetting password.");
     }
   };
 
   return (
-    <div className="password-reset-container">
-      <div className="logo-container">
-        <img src="/favicon.svg" alt="Company Logo" className="logo" />
-      </div>
-      <h2>Reset Your Password</h2>
-
-      {message && <div className="message error">{message}</div>}
-
-      <form onSubmit={handleSubmit}>
-        <div className="form-group">
-          <label htmlFor="username">Username</label>
-          <input
-            type="text"
-            id="username"
-            placeholder="Enter your username"
-            value={username}
-            onChange={(e) => setUsername(e.target.value)}
-            required
-          />
-        </div>
-
-        <div className="method-options">
-          <h4>Choose verification method:</h4>
-
-          <div className="radio-option">
+    <div className="body-container">
+      <div className="main-container">
+        <h2>Forgot Password</h2>
+        {step === 1 && (
+          <form onSubmit={handleSendOtp}>
+            <label>Email:</label>
             <input
-              type="radio"
-              id="otp-method"
-              name="method"
-              value="otp"
-              checked={method === "otp"}
-              onChange={(e) => setMethod(e.target.value)}
+              type="email"
+              value={email}
+              onChange={e => setEmail(e.target.value)}
               required
+              placeholder="Enter your email"
             />
-            <label htmlFor="otp-method">Send OTP to my email</label>
-          </div>
-
-          <div className="radio-option">
+            <button type="submit" className="bht">Send OTP</button>
+          </form>
+        )}
+        {step === 2 && (
+          <form onSubmit={handleVerifyOtp}>
+            <label>Enter OTP sent to your email:</label>
             <input
-              type="radio"
-              id="password-method"
-              name="method"
-              value="old_password"
-              checked={method === "old_password"}
-              onChange={(e) => setMethod(e.target.value)}
+              type="text"
+              value={otp}
+              onChange={e => setOtp(e.target.value)}
               required
+              placeholder="Enter OTP"
             />
-            <label htmlFor="password-method">Verify with my old password</label>
-          </div>
-        </div>
-
-        <button type="submit" className="btn">
-          Continue
-        </button>
-      </form>
-
-      <div className="back-to-login">
-        Remember your password? <a href="/login">Sign in</a>
+            <button type="submit" className="bht">Verify OTP</button>
+          </form>
+        )}
+        {step === 3 && (
+          <form onSubmit={handleResetPassword}>
+            <label>New Password:</label>
+            <input
+              type="password"
+              value={newPassword}
+              onChange={e => setNewPassword(e.target.value)}
+              required
+              placeholder="Enter new password"
+            />
+            <label>Confirm Password:</label>
+            <input
+              type="password"
+              value={confirmPassword}
+              onChange={e => setConfirmPassword(e.target.value)}
+              required
+              placeholder="Confirm new password"
+            />
+            <button type="submit" className="bht">Reset Password</button>
+          </form>
+        )}
+        <p>
+          <a style={{ cursor: "pointer", color: "blue" }} onClick={() => navigate("/login")}>
+            Back to Login
+          </a>
+        </p>
       </div>
-
-      {/* Inline Styles moved here */}
-      <style>{`
-        :root {
-          --primary-color:rgb(16, 67, 255);
-          --dark-color: #343a40;
-          --error-color: #d63031;
-        }
-        body {
-          font-family: 'Poppins', sans-serif;
-        }
-        .password-reset-container {
-          background-color: white;
-          border-radius: 15px;
-          box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-          max-width: 500px;
-          margin: 40px auto;
-          padding: 40px;
-          text-align: center;
-        }
-        .logo {
-          max-width: 129px;
-          height: auto;
-        }
-        h2 {
-          color: var(--dark-color);
-          margin-bottom: 30px;
-          font-weight: 600;
-        }
-        .form-group {
-          margin-bottom: 20px;
-          text-align: left;
-        }
-        input[type="text"] {
-          width: 100%;
-          padding: 12px 15px;
-          border: 2px solid #e0e0e0;
-          border-radius: 8px;
-          font-size: 16px;
-        }
-        input[type="text"]:focus {
-          border-color: var(--primary-color);
-          outline: none;
-          box-shadow: 0 0 0 3px rgba(0, 60, 255, 0.2);
-        }
-        .method-options {
-          margin: 25px 0;
-          text-align: left;
-        }
-        .radio-option {
-          display: flex;
-          align-items: center;
-          margin-bottom: 15px;
-        }
-        .radio-option input {
-          margin-right: 10px;
-        }
-        .btn {
-          background-color: var(--primary-color);
-          color: white;
-          border: none;
-          padding: 12px 25px;
-          border-radius: 8px;
-          font-size: 16px;
-          cursor: pointer;
-          width: 100%;
-        }
-        .btn:hover {
-          background-color: rgb(53, 33, 228);
-        }
-        .message {
-          margin-top: 20px;
-          padding: 12px;
-          border-radius: 8px;
-          font-size: 14px;
-        }
-        .error {
-          background-color: rgba(214, 48, 49, 0.1);
-          color: var(--error-color);
-          border: 1px solid rgba(214, 48, 49, 0.3);
-        }
-        .back-to-login {
-          margin-top: 20px;
-          color: var(--dark-color);
-          font-size: 14px;
-        }
-        .back-to-login a {
-          color: var(--primary-color);
-          font-weight: 500;
-        }
-      `}</style>
     </div>
   );
 };
