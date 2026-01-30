@@ -7,7 +7,7 @@ const axios = require('axios');
 const nodemailer = require('nodemailer');
 
 const app = express();
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT;
 const MONGODB_URI = process.env.MONGODB_URI;
 const JWT_SECRET = process.env.JWT_SECRET;
 
@@ -52,42 +52,42 @@ const bookingSchema = new mongoose.Schema({
 
 const MuseumBooking = mongoose.model('MuseumBooking', bookingSchema);
 
-// Example OTP Mongo Schema
-const OtpSchema = new mongoose.Schema({
-  email: String,
-  otp: String,
-  createdAt: { type: Date, default: Date.now, expires: 300 } // expires in 5 min
-});
-const Otp = mongoose.model('Otp', OtpSchema);
+// // Example OTP Mongo Schema
+// const OtpSchema = new mongoose.Schema({
+//   email: String,
+//   otp: String,
+//   createdAt: { type: Date, default: Date.now, expires: 300 } // expires in 5 min
+// });
+// const Otp = mongoose.model('Otp', OtpSchema);
 
-// To set
-await Otp.create({ email, otp });
-// To get & check
-const record = await Otp.findOne({ email, otp });
-if (!record) return res.json({ success: false, message: "Invalid OTP." });
-await record.deleteOne(); // Remove after use
+// // To set
+// await Otp.create({ email, otp });
+// // To get & check
+// const record = await Otp.findOne({ email, otp });
+// if (!record) return res.json({ success: false, message: "Invalid OTP." });
+// await record.deleteOne(); // Remove after use
 
 
-// Setup nodemailer transporter (use your email credentials)
-const transporter = nodemailer.createTransport({
-  service: 'gmail',
-  auth: {
-    user: "sushantapradhankumar67@gmail.com", // your gmail address
-    pass: "camw dvaf byfg kibc"  // your gmail app password
-  }
-});
+// // Setup nodemailer transporter (use your email credentials)
+// const transporter = nodemailer.createTransport({
+//   service: 'gmail',
+//   auth: {
+//     user: "sushantapradhankumar67@gmail.com", // your gmail address
+//     pass: "camw dvaf byfg kibc"  // your gmail app password
+//   }
+// });
 
-// Log nodemailer config (do NOT log password)
-console.log("Nodemailer config EMAIL_USER:", "sushantapradhankumar67@gmail.com");
+// // Log nodemailer config (do NOT log password)
+// console.log("Nodemailer config EMAIL_USER:", "sushantapradhankumar67@gmail.com");
 
-// Verify transporter on startup
-transporter.verify(function(error, success) {
-  if (error) {
-    console.error("Nodemailer transporter verification failed:", error);
-  } else {
-    console.log("Nodemailer transporter is ready to send emails");
-  }
-});
+// // Verify transporter on startup
+// transporter.verify(function(error, success) {
+//   if (error) {
+//     console.error("Nodemailer transporter verification failed:", error);
+//   } else {
+//     console.log("Nodemailer transporter is ready to send emails");
+//   }
+// });
 
 // Register User
 app.post('/register', async (req, res) => {
